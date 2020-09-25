@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useDevice } from 'vtex.device-detector'
 import { NoSSR } from 'vtex.render-runtime'
 import { useCssHandles } from 'vtex.css-handles'
 import { useQuery } from 'react-apollo'
@@ -50,6 +51,10 @@ const StorieComponent = ({
 }
 
 const StoriesComponent = (props: StoriesComponentProps) => {
+  const { isMobile } = useDevice()
+  if (!isMobile) {
+    return null
+  }
   const Stories = React.lazy(() => import('react-insta-stories'))
   const { stories } = props
 
