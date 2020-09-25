@@ -6,6 +6,7 @@ import { useLazyQuery } from 'react-apollo'
 import { product as queryProduct } from 'vtex.store-resources/Queries'
 import { Swipe } from "react-swipe-component"
 import "./Storie.global.css"
+import { useDevice } from 'vtex.device-detector'
 
 interface Content {
     action: Function
@@ -85,6 +86,12 @@ const StoriesComponent = (props: StoriesComponentProps) => {
 
     const onSwipeUpListener = () => {
         console.log("Swiped Up")
+    }
+
+    const { isMobile } = useDevice()
+    
+    if (!isMobile) {
+        return null
     }
 
     return stories?.length ? stories.map((storie, index) => {
