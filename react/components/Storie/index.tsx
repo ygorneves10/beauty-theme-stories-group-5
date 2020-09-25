@@ -1,21 +1,33 @@
 import React, { useEffect } from 'react'
 import { NoSSR } from 'vtex.render-runtime'
-import { useQuery } from 'react-apollo'
-import { product as queryProduct } from 'vtex.store-resources/Queries'
+import { useCssHandles } from 'vtex.css-handles'
+// import { useQuery } from 'react-apollo'
+// import { product as queryProduct } from 'vtex.store-resources/Queries'
 
 interface Content {
     action: Function
     isPaused?: boolean
 }
 
-interface StorieProps {
-    img: string
-    behavior: string
+interface StorieComponentProps extends Content, StorieItem { }
+
+interface StorieItem {
+    sku: string
+    image: string
+    behavior: "swipe-up" | "add-to-cart"
 }
 
-interface StorieComponentProps extends Content, StorieProps { }
+interface Storie {
+    image: string
+    storiesItems: Array<StorieItem>
+    title: string
+}
 
-const StorieComponent = ({ action, img, behavior }: StorieComponentProps) => {
+interface StoriesComponentProps {
+    stories: Array<Storie>
+}
+
+const StorieComponent = ({ action, image, behavior, sku }: StorieComponentProps) => {
     const time = 7000
 
     const storieAction = (action: Function): any =>
@@ -25,61 +37,44 @@ const StorieComponent = ({ action, img, behavior }: StorieComponentProps) => {
 
     useEffect(() => {
         console.log('BEHAVIOR => ', behavior)
+        console.log('SKU => ', sku)
         storieAction(action)
     }, [])
 
-    return <img src={img} width="100%" alt="Imagem" />
+    return <img src={image} width="100%" alt="Imagem" />
 }
 
-const StoriesComponent = (props: any) => {
+const StoriesComponent = (props: StoriesComponentProps) => {
     const Stories = React.lazy(() => import('react-insta-stories'))
+    const { stories } = props
 
-    console.log("PROPS => ", props)
+    const CSS_HANDLES = [
+        'stories'
+    ] as const
 
-    //   const { loading, data, error } = useQuery(queryProduct, {
-    //     variables: {
-    //       identifier: {
-    //         field: 'sku',
-    //         value: ""
-    //       },
-    //     },
-    //   })
+    const handles = useCssHandles(CSS_HANDLES)
 
-    //   if (loading || error || !data) {
-    //     return null
-    //   }
+    return stories?.length ? stories.map(({ image, title, storiesItems }: Storie) => {
+        const storiesArr = storiesItems.map(({ image, behavior, sku }: StorieItem) => (
+            {
+                content: ({ action }: Content) => <StorieComponent action={action} image={image} behavior={behavior} sku={sku} />
+            }
+        ))
 
-    //   console.log(data.product)
-
-    const stories = [
-        {
-            img:
-                'https://i.picsum.photos/id/133/1080/1920.jpg?hmac=mw1-3qObjR9g0YZA8jbk2BvlgH6t4o1xWCCT44KC9PA',
-            behavior: 'add-to-cart',
-        },
-        {
-            img:
-                'https://i.picsum.photos/id/15/1080/1920.jpg?hmac=fVtH2bkFLY2ifCJ7-1DNqSXoH2nmDeOEYsdgXsLVSjk',
-            behavior: 'swipe-up',
-        },
-        {
-            img:
-                'https://i.picsum.photos/id/485/1080/1920.jpg?hmac=bylnefLFXgDQo5wKMp5p5jYCzJJaJ_a3lGpat-NW7y0',
-            behavior: 'add-to-cart',
-        },
-    ].map(({ img, behavior }: StorieProps) => ({
-        content: ({ action }: Content) => (
-            <StorieComponent action={action} img={img} behavior={behavior} />
-        ),
-    }))
-
-    return (
-        <NoSSR onSSR={() => null}>
-            <React.Suspense fallback={<div>Carregando...</div>}>
-                {stories?.length && <Stories loop stories={stories} width={432} height={768} />}
-            </React.Suspense>
-        </NoSSR>
-    )
+        return (
+            <>
+                <img src={image} />
+                <p>{title}</p>
+                <div className={handles.stories}>
+                    <NoSSR onSSR={() => null}>
+                        <React.Suspense fallback={<div>Carregando...</div>}>
+                            {storiesArr?.length && <Stories loop stories={storiesArr} width={432} height={768} />}
+                        </React.Suspense>
+                    </NoSSR>
+                </div>
+            </>
+        )
+    }) : null
 }
 
 StoriesComponent.schema = {
