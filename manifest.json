@@ -11,11 +11,15 @@
     "docs": "0.x"
   },
   "dependencies": {
-    "vtex.render-runtime": "8.x"
+    "vtex.render-runtime": "8.x",
+    "vtex.store-resources": "0.x",
+    "vtex.search-graphql": "0.x",
+    "vtex.device-detector": "0.x",
+    "vtex.styleguide": "9.x",
+    "vtex.store-graphql": "2.x",
+    "vtex.styleguide": "9.x"
   },
-  "registries": [
-    "smartcheckout"
-  ],
+  "registries": ["smartcheckout"],
   "policies": [],
   "$schema": "https://raw.githubusercontent.com/vtex/node-vtex-api/master/gen/manifest.schema"
 }
