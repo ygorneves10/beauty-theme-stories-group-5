@@ -55,12 +55,72 @@ const StoriesComponent = () => {
     ))
 
     return (
-        <NoSSR>
+        <NoSSR onSSR={() => null}>
             <React.Suspense fallback={<div>Carregando...</div>}>
                 {stories?.length && <Stories loop stories={stories} width={432} height={768} />}
             </React.Suspense>
         </NoSSR>
     )
 }
+
+StoriesComponent.schema = {
+    title: "Stories Component",
+    description: "Componente de stories",
+    type: "object",
+    properties: {
+        stories: {
+            title: 'Stories Array',
+            description: 'Stories Array',
+            type: 'array',
+            items: {
+                title: 'Storie',
+                type: 'object',
+                properties: {
+                    image: {
+                        type: 'string',
+                        title: 'Image',
+                        default: '',
+                        widget: {
+                            'ui:widget': 'image-uploader'
+                        }
+                    },
+                    title: {
+                        type: 'string',
+                        title: 'Title',
+                        default: ''
+                    },
+                    storiesItems: {
+                        title: 'Stories Items',
+                        description: 'Stories Items Array',
+                        type: 'array',
+                        items: {
+                            title: 'Storie',
+                            type: 'object',
+                            properties: {
+                                sku: {
+                                    type: 'string',
+                                    title: 'SKU',
+                                    default: ''
+                                },
+                                image: {
+                                    type: 'string',
+                                    title: 'Image',
+                                    default: '',
+                                    widget: {
+                                        'ui:widget': 'image-uploader'
+                                    }
+                                },
+                                behavior: {
+                                    type: 'string',
+                                    enum: ["swipe-up", "add-to-cart"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
 
 export default StoriesComponent
