@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { NoSSR } from 'vtex.render-runtime'
 import { useCssHandles } from 'vtex.css-handles'
-// import { useQuery } from 'react-apollo'
-// import { product as queryProduct } from 'vtex.store-resources/Queries'
+import { Button } from 'vtex.styleguide'
+import { useLazyQuery } from 'react-apollo'
+import { product as queryProduct } from 'vtex.store-resources/Queries'
 import { Swipe } from "react-swipe-component"
+import "./Storie.global.css"
 
 interface Content {
     action: Function
@@ -15,36 +17,55 @@ interface StorieComponentProps extends Content, StorieItem { }
 interface StorieItem {
     sku: string
     image: string
-    setCurrentStorie: Function
     behavior: "swipe-up" | "add-to-cart"
 }
 
 interface Storie {
     image: string
-    storiesItems: Array<StorieItem>
+    storiesItems: StorieItem[]
     title: string
 }
 
 interface StoriesComponentProps {
-    stories: Array<Storie>
+    stories: Storie[]
 }
 
-const StorieComponent = ({ action, image, behavior, sku, setCurrentStorie }: StorieComponentProps) => {
-    const time = 7000
+const StorieComponent = ({ action, image, behavior, sku }: StorieComponentProps) => {
+    const time = 30000
 
     const storieAction = (action: Function): any => {
         setTimeout(() => {
-            setCurrentStorie({ sku, behavior })
             action('play')
         }, time)
     }
 
     useEffect(() => {
+        console.log({ behavior, sku })
         storieAction(action)
     }, [])
 
+    const [getProduct, { data }] = useLazyQuery(queryProduct)
+
+    useEffect(() => {
+        getProduct({
+            variables: {
+                identifier: {
+                    field: 'id',
+                    value: sku,
+                },
+            },
+        })
+    }, [sku])
+
     return (
-        <img src={image} width="100%" alt="Imagem" />
+        <div onClick={() => console.log("CLICK")}>
+            <img src={image} width="100%" alt="Imagem" />
+            <Button onClick={() => window.location.href = `/${data?.product.linkText}/p`} style={{
+                position: "absolute",
+                top: "0",
+                left: "0",
+            }}>Ver mais</Button>
+        </div>
     )
 }
 
@@ -52,10 +73,6 @@ const StoriesComponent = (props: StoriesComponentProps) => {
     const Stories = React.lazy(() => import('react-insta-stories'))
 
     const [storieOpen, setStorieOpen] = useState(0)
-    const [currentStorie, setCurrentStorie] = useState({
-        sku: null,
-        behavior: null
-    })
 
     const { stories } = props
 
@@ -67,17 +84,14 @@ const StoriesComponent = (props: StoriesComponentProps) => {
     const handles = useCssHandles(CSS_HANDLES)
 
     const onSwipeUpListener = () => {
-        console.log("Swiped Up", currentStorie)
-        if (currentStorie.behavior === "swipe-up") {
-            console.log("Swiped Up", true)
-        }
+        console.log("Swiped Up")
     }
 
     return stories?.length ? stories.map((storie, index) => {
         const { image, title, storiesItems }: Storie = storie
         const storiesArr = storiesItems.map(({ image, behavior, sku }: StorieItem) => (
             {
-                content: ({ action }: Content) => <StorieComponent action={action} image={image} behavior={behavior} sku={sku} setCurrentStorie={setCurrentStorie} />
+                content: ({ action }: Content) => <StorieComponent action={action} image={image} behavior={behavior} sku={sku} />
             }
         ))
 
@@ -107,13 +121,14 @@ const StoriesComponent = (props: StoriesComponentProps) => {
                 }
             </>
         )
-    }) : null
+    })
+        : null
 }
 
 StoriesComponent.schema = {
-    title: "Stories Component",
-    description: "Componente de stories",
-    type: "object",
+    title: 'Stories Component',
+    description: 'Componente de stories',
+    type: 'object',
     properties: {
         stories: {
             title: 'Stories Array',
@@ -128,13 +143,13 @@ StoriesComponent.schema = {
                         title: 'Image',
                         default: '',
                         widget: {
-                            'ui:widget': 'image-uploader'
-                        }
+                            'ui:widget': 'image-uploader',
+                        },
                     },
                     title: {
                         type: 'string',
                         title: 'Title',
-                        default: ''
+                        default: '',
                     },
                     storiesItems: {
                         title: 'Stories Items',
@@ -147,27 +162,27 @@ StoriesComponent.schema = {
                                 sku: {
                                     type: 'string',
                                     title: 'SKU',
-                                    default: ''
+                                    default: '',
                                 },
                                 image: {
                                     type: 'string',
                                     title: 'Image',
                                     default: '',
                                     widget: {
-                                        'ui:widget': 'image-uploader'
-                                    }
+                                        'ui:widget': 'image-uploader',
+                                    },
                                 },
                                 behavior: {
                                     type: 'string',
-                                    enum: ["swipe-up", "add-to-cart"]
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-};
+                                    enum: ['swipe-up', 'add-to-cart'],
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+}
 
 export default StoriesComponent
