@@ -2,71 +2,62 @@ import React, { useEffect } from 'react'
 import { NoSSR } from 'vtex.render-runtime'
 
 interface Content {
-    action: any
-    isPaused?: any
+    action: Function
+    isPaused?: boolean
+}
+
+interface StorieProps {
+    img: string
+    behavior: string
+}
+
+interface StorieComponentProps extends Content, StorieProps { }
+
+const StorieComponent = ({ action, img, behavior }: StorieComponentProps) => {
+    const time = 7000
+
+    const storieAction = (action: Function): any => setTimeout(() => { action('play') }, time)
+
+    useEffect(() => {
+        console.log("BEHAVIOR => ", behavior)
+        storieAction(action)
+    }, [])
+
+    return (
+        <img
+            src={img}
+            width="100%"
+            alt="Imagem"
+        />
+    )
 }
 
 const StoriesComponent = () => {
     const Stories = React.lazy(() => import('react-insta-stories'))
-    const time = 7000
-
-    const storieAction = (action: Function): any =>
-        setTimeout(() => {
-            action('play')
-        }, time)
 
     const stories = [
         {
-            content: ({ action }: Content) => {
-                useEffect(() => {
-                    storieAction(action)
-                }, [])
-
-                return (
-                    <img
-                        src="https://i.picsum.photos/id/133/1080/1920.jpg?hmac=mw1-3qObjR9g0YZA8jbk2BvlgH6t4o1xWCCT44KC9PA"
-                        width="100%"
-                        alt="Imagem"
-                    />
-                )
-            },
+            img: "https://i.picsum.photos/id/133/1080/1920.jpg?hmac=mw1-3qObjR9g0YZA8jbk2BvlgH6t4o1xWCCT44KC9PA",
+            behavior: "add-to-cart"
         },
         {
-            content: ({ action }: Content) => {
-                useEffect(() => {
-                    storieAction(action)
-                }, [])
-
-                return (
-                    <img
-                        src="https://i.picsum.photos/id/15/1080/1920.jpg?hmac=fVtH2bkFLY2ifCJ7-1DNqSXoH2nmDeOEYsdgXsLVSjk"
-                        width="100%"
-                        alt="Imagem"
-                    />
-                )
-            },
+            img: "https://i.picsum.photos/id/15/1080/1920.jpg?hmac=fVtH2bkFLY2ifCJ7-1DNqSXoH2nmDeOEYsdgXsLVSjk",
+            behavior: "swipe-up"
         },
         {
-            content: ({ action }: Content) => {
-                useEffect(() => {
-                    storieAction(action)
-                }, [])
-
-                return (
-                    <img
-                        src="https://i.picsum.photos/id/485/1080/1920.jpg?hmac=bylnefLFXgDQo5wKMp5p5jYCzJJaJ_a3lGpat-NW7y0"
-                        width="100%"
-                        alt="Imagem"
-                    />
-                )
-            },
+            img: "https://i.picsum.photos/id/485/1080/1920.jpg?hmac=bylnefLFXgDQo5wKMp5p5jYCzJJaJ_a3lGpat-NW7y0",
+            behavior: "add-to-cart"
         }
-    ]
+    ].map(({ img, behavior }: StorieProps) => (
+        {
+            content: ({ action }: Content) => <StorieComponent action={action} img={img} behavior={behavior} />
+        }
+    ))
 
     return (
         <NoSSR>
             <React.Suspense fallback={<div>Carregando...</div>}>
-                <Stories loop stories={stories} width={432} height={768} />
+                {stories?.length && <Stories loop stories={stories} width={432} height={768} />}
             </React.Suspense>
         </NoSSR>
     )
